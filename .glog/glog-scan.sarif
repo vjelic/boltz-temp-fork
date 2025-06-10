@@ -1,0 +1,865 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Glog.AI",
+          "organization": "Glog.AI",
+          "fullName": "Glog, Making software more secure",
+          "version": "1.0.0",
+          "semanticVersion": "1.0.0",
+          "informationUri": "https://www.glog.ai",
+          "rules": [
+            {
+              "id": "glog-5c9515f4-1fef-4c8c-88b7-a80c167f5e95",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability \"Security Risk Detected: Use of subprocess call with shell=True\" in Python arises when the `subprocess` module is used with the `shell=True` argument. This can lead to command injection vulnerabilities, where an attacker can execute arbitrary commands on the host system. This is particularly dangerous if user input is passed to the command being executed, as it can be manipulated to execute unintended commands.\n\n### General Mitigation Advice\n\n1. **Avoid `shell=True`:** Use the `subprocess` module without the `shell=True` argument. This prevents the shell from interpreting the command, reducing the risk of injection.\n2. **Use `shlex.split()`:** When constructing command arguments, use `shlex.split()` to safely parse the command string into a list.\n3. **Validate Input:** Always validate and sanitize any user input that may be used in constructing command-line arguments.\n4. **Use `subprocess.run()`:** Prefer using `subprocess.run()` with a list of arguments instead of a single string.\n\n### Source Code Fix Recommendation\n\n```python\nimport subprocess\nimport shlex\n\ndef main(args):\n    # Example of a vulnerable call\n    # subprocess.call(\"ls \" + args, shell=True)\n\n    # Recommended fix\n    command = [\"ls\"] + shlex.split(args)\n    subprocess.run(command, check=True)\n\n# Example usage\nif __name__ == \"__main__\":\n    main(\"-l /home/user\")\n```\n\n### Library Dependencies\n\n- `subprocess`: This is a standard library module in Python, so no additional installation is required.\n- `shlex`: This is also a standard library module in Python, so no additional installation is required.\n\n### Relevant Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')](https://cwe.mitre.org/data/definitions/78.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B602"
+                ]
+              }
+            },
+            {
+              "id": "glog-dbd9c7cb-1c62-4dfa-a2f5-5150a9521282",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability \"Security Concern: Use of subprocess call with shell=True Detected\" in Python arises when the `subprocess` module is used with the `shell=True` argument. This can lead to command injection vulnerabilities, where an attacker can execute arbitrary commands on the host system. This is particularly dangerous if user input is passed to the shell command, as it can be exploited to execute malicious code.\n\n### General Mitigation Advice\n\n1. **Avoid `shell=True`:** Use the `subprocess` module without the `shell=True` argument. This prevents the shell from interpreting the command string, reducing the risk of command injection.\n2. **Use `shlex.split()`:** When constructing command arguments, use `shlex.split()` to safely parse the command string into a list of arguments.\n3. **Validate Input:** Always validate and sanitize any user input that may be used in constructing shell commands.\n4. **Use High-Level Libraries:** Consider using higher-level libraries or functions that abstract away the need to use `subprocess` directly.\n\n### Source Code Fix Recommendation\n\nGiven the code snippet:\n\n```python\nout_path = Path(outdir) / f\"{name}_ligand.json\"\n```\n\nIf this path is used in a subprocess call with `shell=True`, it should be refactored as follows:\n\n```python\nimport subprocess\nfrom pathlib import Path\n\nout_path = Path(outdir) / f\"{name}_ligand.json\"\n\n# Example of a vulnerable subprocess call\n# subprocess.call(f\"some_command {out_path}\", shell=True)\n\n# Secure version without shell=True\nsubprocess.run([\"some_command\", str(out_path)], check=True)\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following library dependencies are required:\n\n- `pathlib`: This is part of the Python Standard Library, so no additional installation is needed.\n- `subprocess`: This is also part of the Python Standard Library.\n\n### OWASP Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')](https://cwe.mitre.org/data/definitions/78.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B602"
+                ]
+              }
+            },
+            {
+              "id": "glog-a3d7c2f1-45df-40d5-aeb2-87982f73eec9",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nDeserializing untrusted data with Python's `pickle` module can introduce significant security risks. The `pickle` module is designed to serialize and deserialize Python objects, but it is not secure against erroneous or maliciously constructed data. When untrusted data is deserialized using `pickle`, it can execute arbitrary code, leading to potential security vulnerabilities such as remote code execution (RCE).\n\n### Vulnerability Sink\n\nThe specific vulnerability sink in the code example is:\n\n```python\nccd = pickle.load(file)\n```\n\nThis line of code deserializes data from a file object using `pickle.load()`, which can execute arbitrary code if the data is crafted maliciously.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` with Untrusted Data**: Do not use `pickle` to deserialize data from untrusted or unauthenticated sources.\n\n2. **Use Safer Alternatives**: Consider using safer serialization formats such as JSON, which do not allow code execution during deserialization.\n\n3. **Use `pickle` in a Controlled Environment**: If `pickle` must be used, ensure that it is only used in a controlled environment where the data source is trusted.\n\n4. **Implement Input Validation**: Validate and sanitize input data before deserialization to ensure it conforms to expected formats and types.\n\n### Source Code Fix Recommendation\n\nReplace the use of `pickle` with a safer alternative like `json` for deserializing data:\n\n```python\nimport json\n\n# Assuming the file contains JSON data\nwith open('file.json', 'r') as file:\n    ccd = json.load(file)\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following library dependencies are required:\n\n- `json` (part of Python's standard library)\n\n### Relevant OWASP Resources\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-5c603d2e-00b4-4e27-a590-88f9ee8a3766",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nDeserializing untrusted data with Python's `pickle` module can introduce significant security risks. The `pickle` module is capable of executing arbitrary code during the deserialization process, which can be exploited by an attacker to execute malicious code on the host system. This vulnerability is particularly dangerous when deserializing data from untrusted sources, as it can lead to remote code execution (RCE) attacks.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` or `yaml` for data interchange.\n\n2. **Use `pickle` with Caution**: If you must use `pickle`, ensure that the data being deserialized is from a trusted source. Validate and sanitize all inputs before deserialization.\n\n3. **Use Restricted Unpickling**: Consider using the `pickle` module's `RestrictedUnpickler` to limit the classes and functions that can be deserialized.\n\n4. **Implement Sandboxing**: Run deserialization in a restricted environment or sandbox to limit the potential impact of malicious code execution.\n\n### Source Code Fix Recommendation\n\nReplace the use of `pickle.load` with a safer alternative, such as `json.load`, if the data format allows. If `pickle` must be used, ensure the data source is trusted and validated.\n\n```python\nimport json\n\n# Assuming `f` is a file-like object containing JSON data\ndata = json.load(f)\n```\n\n### Library Dependencies\n\nFor the code example using `json`, the only required library is Python's standard library `json` module, which is included with Python by default.\n\n### Relevant OWASP Resources\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-a73afce9-7d58-465f-a0bf-b6c86d4b8284",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability \"Security Concern: Use of subprocess call with shell=True Detected\" in Python arises when the `subprocess` module is used with the `shell=True` argument. This can lead to command injection vulnerabilities, where an attacker can execute arbitrary commands on the host system. This is particularly dangerous if user input is passed to the command being executed, as it can be manipulated to execute unintended commands.\n\n### General Mitigation Advice\n\n1. **Avoid `shell=True`:** Use `shell=False` and pass the command and arguments as a list. This prevents shell injection vulnerabilities by not invoking the shell.\n2. **Sanitize Inputs:** If user input must be included in the command, ensure it is properly sanitized and validated.\n3. **Use `shlex.split()`:** When dealing with complex command strings, use `shlex.split()` to safely parse the command into a list.\n4. **Use High-Level Libraries:** Consider using higher-level libraries that abstract away the need to use `subprocess` directly, such as `sh` or `plumbum`.\n\n### Source Code Fix Recommendation\n\nGiven the specific vulnerability sink:\n\n```python\nclustering_path = outdir / \"clust_prot_cluster.tsv\"\n```\n\nAssuming this path is used in a subprocess call, the fix would involve ensuring that `shell=False` is used and the command is passed as a list. Here's an example fix:\n\n```python\nimport subprocess\nfrom pathlib import Path\n\noutdir = Path(\"/path/to/output\")\nclustering_path = outdir / \"clust_prot_cluster.tsv\"\n\n# Example command that might be used\ncommand = [\"cat\", str(clustering_path)]\n\n# Secure subprocess call\nsubprocess.run(command, check=True)\n```\n\n### Library Dependencies\n\nThe code example requires the following libraries:\n\n- `subprocess` (standard library)\n- `pathlib` (standard library)\n\n### Relevant Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')](https://cwe.mitre.org/data/definitions/78.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B602"
+                ]
+              }
+            },
+            {
+              "id": "glog-c48efe0d-ca73-47a2-8e54-ea7b3d65b1c7",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability associated with deserializing untrusted data using Python's `pickle` module arises from the fact that `pickle` can execute arbitrary code during the deserialization process. This means that if an attacker can control the input to `pickle.load()`, they can potentially execute arbitrary code on the server, leading to severe security risks such as data breaches, system compromise, or denial of service.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` or `yaml` for data interchange formats.\n\n2. **Use `pickle` Safely**: If you must use `pickle`, ensure that the data being deserialized is from a trusted source. Validate and sanitize inputs rigorously.\n\n3. **Use Restricted Unpickling**: Consider using modules like `pickletools` or `restricted-unpickler` that provide safer unpickling by restricting the set of objects that can be deserialized.\n\n4. **Environment Isolation**: Run deserialization processes in a sandboxed environment to limit the potential impact of malicious code execution.\n\n### Source Code Fix Recommendation\n\nTo mitigate the risk in the provided code snippet, replace `pickle` with a safer alternative like `json` if the data format allows. If `pickle` must be used, ensure the data source is trusted.\n\n```python\nimport json\n\n# Assuming `handle` is a file-like object containing JSON data\nligand_data = json.load(handle)\n```\n\nIf `pickle` is necessary and the data source is trusted:\n\n```python\nimport pickle\n\n# Ensure `handle` is from a trusted source\nligand_data = pickle.load(handle)\n```\n\n### Library Dependencies\n\nFor the code example to execute properly, the following library dependencies are required:\n\n- `pickle` (standard library)\n- `json` (standard library)\n\n### Relevant Links\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-9a000fb7-55d0-4a61-bc82-3002617bad1a",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability associated with deserializing untrusted data using Python's `pickle` module arises from the fact that `pickle` can execute arbitrary code during the deserialization process. This means that if an attacker can control the input to `pickle.loads()`, they can potentially execute arbitrary code on the server, leading to severe security risks such as data breaches, system compromise, or denial of service.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` for data interchange, which does not allow code execution.\n\n2. **Use `pickle` Alternatives**: If you must serialize and deserialize complex Python objects, consider using libraries like `dill` or `jsonpickle` with caution, ensuring that the data source is trusted.\n\n3. **Validate and Sanitize Input**: Always validate and sanitize input data before deserialization to ensure it comes from a trusted source.\n\n4. **Use Restricted Execution Environments**: If deserialization of untrusted data is unavoidable, consider running the deserialization process in a restricted execution environment, such as a sandbox or a separate process with limited permissions.\n\n### Source Code Fix Recommendation\n\nTo mitigate the risk of deserializing untrusted data with `pickle`, you can replace the `pickle` module with a safer alternative like `json` if the data structure allows it. Here's an example of how you might refactor the code:\n\n```python\nimport json\n\n# Assuming `value` is a JSON string\ntry:\n    value = json.loads(value)\nexcept json.JSONDecodeError:\n    # Handle the error appropriately\n    value = None\n```\n\n### Library Dependencies\n\nFor the above code example to execute properly, you need the following library:\n\n- `json` (This is a standard library in Python, so no additional installation is required.)\n\n### Relevant Links\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-0f186d51-950d-44b1-bfe4-bb5fefb368c9",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability associated with deserializing untrusted data using Python's `pickle` module arises from the fact that `pickle` can execute arbitrary code during the deserialization process. This means that if an attacker can control the input to `pickle.load()`, they can potentially execute arbitrary code on the system, leading to severe security risks such as data breaches, system compromise, or denial of service.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` or `yaml` (with safe loaders).\n\n2. **Use `pickle` with Caution**: If you must use `pickle`, ensure that the data being deserialized is from a trusted source. Validate and sanitize inputs rigorously.\n\n3. **Use `pickle` Alternatives**: Consider using `dill` or `joblib` for serialization if you need to serialize more complex Python objects, but be aware that these also have similar security concerns.\n\n4. **Implement Access Controls**: Ensure that only authorized users can provide input to the deserialization process.\n\n### Source Code Fix Recommendation\n\nTo mitigate the risk of deserializing untrusted data, replace the `pickle` module with a safer alternative like `json` if the data structure allows it. Here's an example of how you might refactor the code:\n\n```python\nimport json\n\n# Assuming `f` is a file-like object containing JSON data\nextra_mols = json.load(f)\n```\n\nIf `pickle` must be used, ensure that the data source is trusted and validated:\n\n```python\nimport pickle\n\n# Ensure `f` is a trusted source\nwith open('trusted_source.pkl', 'rb') as f:\n    extra_mols = pickle.load(f)\n```\n\n### Library Dependencies\n\nFor the JSON example, the only dependency is the Python standard library:\n\n- `json`\n\nFor the original `pickle` example, the dependency is also part of the Python standard library:\n\n- `pickle`\n\n### Relevant OWASP Resources\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-6279b405-eeae-4005-af2c-32f9636930f4",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability associated with deserializing untrusted data using Python's `pickle` module arises from the fact that `pickle` can execute arbitrary code during the deserialization process. This means that if an attacker can control the input to `pickle.load()`, they can potentially execute arbitrary code on the server, leading to a remote code execution (RCE) vulnerability. This is particularly dangerous when the data being deserialized is from an untrusted source.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` for serialization and deserialization, which do not allow code execution.\n\n2. **Use `pickle` Safely**: If you must use `pickle`, ensure that the data being deserialized is from a trusted source. Validate and sanitize all inputs before deserialization.\n\n3. **Use Restricted Unpickling**: Use modules like `pickletools` to analyze the pickle data and restrict the types of objects that can be deserialized.\n\n4. **Implement Sandboxing**: If deserialization of untrusted data is unavoidable, consider running the deserialization process in a sandboxed environment to limit the potential impact of an exploit.\n\n### Source Code Fix Recommendation\n\nReplace the use of `pickle` with `json` for safer deserialization when dealing with untrusted data:\n\n```python\nimport json\n\n# Assuming `f` is a file-like object containing JSON data\ndata: dict = json.load(f)\n```\n\n### Library Dependencies\n\nFor the code example to execute properly, the following library is required:\n\n- `json` (standard library in Python)\n\n### Relevant Links\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-e2dd9feb-ff1d-4372-ab90-802fb5eba351",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability associated with deserializing untrusted data using Python's `pickle` module arises from the fact that `pickle` can execute arbitrary code during the deserialization process. This means that if an attacker can control the input to `pickle.loads()`, they can potentially execute arbitrary code on the server, leading to a remote code execution (RCE) vulnerability. This is particularly dangerous when the data being deserialized is from an untrusted source.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: The most effective way to mitigate this risk is to avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` or `yaml` (with safe loaders).\n\n2. **Use `pickle` Alternatives**: If you must serialize and deserialize data, consider using libraries like `json` or `msgpack` that do not have the same security risks as `pickle`.\n\n3. **Validate and Sanitize Input**: If you must use `pickle`, ensure that the data being deserialized is from a trusted source and has been validated and sanitized.\n\n4. **Use Restricted Execution Environments**: If deserialization of untrusted data is unavoidable, consider running the deserialization process in a restricted execution environment, such as a sandbox, to limit the potential impact of an exploit.\n\n### Source Code Fix Recommendation\n\nReplace the use of `pickle.loads()` with a safer alternative, such as `json.loads()`, if the data format allows it. Here's an example of how you might refactor the code:\n\n```python\nimport json\n\n# Assuming `serialized_sym` is a JSON string\nsym = json.loads(serialized_sym)\n```\n\n### Library Dependencies\n\nFor the above code example to execute properly, the following library is required:\n\n- `json` (This is a standard library in Python, so no additional installation is needed.)\n\n### Relevant Links\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-b633956a-18e1-4068-bfef-79bc2e4014c8",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nDeserializing untrusted data using Python's `pickle` module can introduce significant security risks. The `pickle` module is inherently insecure when handling data from untrusted sources because it can execute arbitrary code during the deserialization process. This vulnerability can be exploited by attackers to execute malicious code, leading to potential data breaches, system compromise, or other malicious activities.\n\n### Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` or `yaml` for data serialization and deserialization.\n\n2. **Use `pickle` Safely**: If you must use `pickle`, ensure that the data being deserialized is from a trusted and verified source. Implement strict access controls and data validation mechanisms.\n\n3. **Use `pickle` Alternatives**: Consider using libraries like `json` or `msgpack` that are designed to handle untrusted data more safely.\n\n4. **Implement Sandboxing**: If deserialization of untrusted data is unavoidable, consider running the deserialization process in a sandboxed environment to limit potential damage.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability in the provided code snippet, replace `pickle` with a safer serialization library such as `json`. Here's an example of how you might refactor the code:\n\n```python\nimport json\n\n# Assuming mol.GetProp(\"symmetries\") returns a JSON string\nsym = json.loads(mol.GetProp(\"symmetries\"))\n```\n\n### Library Dependencies\n\nTo execute the refactored code properly, the following library dependencies are required:\n\n- `rdkit` (for `mol.GetProp` function)\n- `json` (standard library, no installation required)\n\n### Relevant Links\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [OWASP Top Ten 2021: A08:2021 - Software and Data Integrity Failures](https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/)\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-2ac5bd02-4e69-45ac-8962-0108e43d2b39",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nDeserializing untrusted data using Python's `pickle` module can introduce significant security risks. The `pickle` module is inherently insecure when handling data from untrusted sources because it can execute arbitrary code during the deserialization process. This vulnerability can be exploited by attackers to execute malicious code, leading to potential data breaches, system compromise, or other malicious activities.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` for data interchange, which does not allow code execution.\n\n2. **Use `pickle` with Caution**: If you must use `pickle`, ensure that the data being deserialized is from a trusted and verified source.\n\n3. **Implement Access Controls**: Restrict access to the system or application that performs deserialization to trusted users only.\n\n4. **Use Sandboxing**: Run the deserialization process in a restricted environment to limit the potential impact of malicious code execution.\n\n### Source Code Fix Recommendation\n\nTo mitigate the security risk in the provided code snippet, replace `pickle.load` with a safer alternative. If the data format allows, use `json` for deserialization:\n\n```python\nimport json\n\n# Assuming the file contains JSON serialized data\nwith open('data.json', 'r') as f:\n    loaded_mols[molecule] = json.load(f)\n```\n\nIf `pickle` must be used, ensure the data source is trusted and verified:\n\n```python\nimport pickle\n\n# Ensure 'f' is a file object from a trusted source\nwith open('trusted_data.pkl', 'rb') as f:\n    loaded_mols[molecule] = pickle.load(f)\n```\n\n### Library Dependencies\n\nFor the code example to execute properly, the following library dependencies are required:\n\n- `pickle` (standard library)\n- `json` (standard library)\n\n### Relevant Resources\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [OWASP Top Ten 2021: A08:2021 - Software and Data Integrity Failures](https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-80ad9f22-793f-405a-827c-2b737217d168",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability associated with deserializing untrusted data using Python's `pickle` module arises from the fact that `pickle` can execute arbitrary code during the deserialization process. This means that if an attacker can control the input to `pickle.loads()`, they can potentially execute arbitrary code on the server, leading to a remote code execution (RCE) vulnerability. This is particularly dangerous when the data being deserialized is from an untrusted source.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: The most effective way to mitigate this risk is to avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` or `yaml` (with `safe_load`).\n\n2. **Use `pickle` Alternatives**: If you must serialize and deserialize data, consider using libraries like `json` or `msgpack` that do not have the same security risks as `pickle`.\n\n3. **Validate and Sanitize Input**: Ensure that any data being deserialized is validated and sanitized before processing.\n\n4. **Use Restricted Execution Environments**: If deserialization of untrusted data is unavoidable, consider running the deserialization process in a restricted environment, such as a sandbox, to limit potential damage.\n\n### Source Code Fix Recommendation\n\nReplace the use of `pickle.loads()` with a safer alternative, such as `json.loads()`, if the data format allows for it. Here's an example fix:\n\n```python\nimport json\n\n# Assuming `data` is a JSON string from an untrusted source\nupper_bounds = json.loads(data)\n```\n\n### Library Dependencies\n\nFor the above code example to execute properly, the following library is required:\n\n- `json` (This is a standard library in Python and does not require installation)\n\n### OWASP Resources\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-afb1d5e6-51a1-43d6-bde6-0268926a6404",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nDeserializing untrusted data using Python's `pickle` module can introduce significant security risks. The `pickle` module is designed to serialize and deserialize Python objects, but it is not secure against erroneous or maliciously constructed data. An attacker can craft a pickle payload that executes arbitrary code during unpickling, leading to potential remote code execution vulnerabilities.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` for simple data structures.\n\n2. **Use `pickle` with Caution**: If you must use `pickle`, ensure that the data source is trusted and that the data has not been tampered with.\n\n3. **Use `pickle` Alternatives**: Consider using safer serialization libraries such as `json`, `ujson`, or `simplejson` for data interchange formats that do not require complex object serialization.\n\n4. **Implement Input Validation**: Validate and sanitize all inputs before processing them.\n\n5. **Use Restricted Execution Environments**: If deserialization of untrusted data is unavoidable, consider running the deserialization process in a restricted environment, such as a container or a sandbox, to limit potential damage.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability in the provided code snippet, replace `pickle.load` with a safer alternative. If the data being loaded is simple and can be represented in JSON format, use the `json` module:\n\n```python\nimport json\n\n# Assuming the file contains JSON data\nwith open('data.json', 'r') as f:\n    loaded_mols[mol_name] = json.load(f)\n```\n\nIf the data is complex and requires a more advanced serialization format, consider using a library like `dill` or `marshal` with caution, understanding their limitations and security implications.\n\n### Library Dependencies\n\nFor the provided code example to execute properly with the recommended fix, the following library is required:\n\n- `json` (part of Python's standard library)\n\n### Relevant Links\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [OWASP Top Ten 2021: A08:2021 - Software and Data Integrity Failures](https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/)\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-8635dc39-cb62-4be0-b75b-d82abeff4d89",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nDeserializing untrusted data using Python's `pickle` module can introduce significant security risks. The `pickle` module is inherently insecure when handling data from untrusted sources because it can execute arbitrary code during the deserialization process. This vulnerability can be exploited by attackers to execute malicious code, leading to potential data breaches, system compromise, or other malicious activities.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` or `yaml` for data serialization and deserialization.\n\n2. **Use `pickle` Safely**: If you must use `pickle`, ensure that the data being deserialized is from a trusted source. Validate and sanitize inputs before deserialization.\n\n3. **Use Restricted Unpickling**: Consider using libraries like `pickle5` or `restricted-unpickler` that provide safer unpickling mechanisms by restricting the types of objects that can be deserialized.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability in the provided code snippet, replace `pickle` with a safer alternative like `json` if the data format allows it. If `pickle` must be used, ensure the data source is trusted and validated.\n\n```python\nimport json\n\n# Assuming the data can be represented as JSON\nbond_mask = json.loads(mol.GetProp(\"pb_bond_mask\"))\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following library dependencies are required:\n\n- `rdkit` (for `mol.GetProp` method)\n- `json` (standard library, no installation required)\n\n### Relevant Links\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-f8bb48ef-79b9-459a-a81a-83ead94da43c",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nDeserializing untrusted data using Python's `pickle` module can introduce significant security risks. The `pickle` module is designed to serialize and deserialize Python objects, but it is not secure against erroneous or maliciously constructed data. If an attacker can control the input to `pickle.loads()`, they can execute arbitrary code during the deserialization process. This vulnerability is particularly dangerous when deserializing data from untrusted sources, as it can lead to remote code execution (RCE).\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` or `yaml` for data interchange formats.\n\n2. **Use `pickle` Safely**: If you must use `pickle`, ensure that the data being deserialized is from a trusted and verified source. Implement strict access controls and data validation.\n\n3. **Use `restricted-unpickler`**: Consider using a restricted unpickler that limits the types of objects that can be deserialized.\n\n4. **Environment Isolation**: Run deserialization code in a restricted environment, such as a container or a virtual machine, to limit the potential impact of a security breach.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability in the provided code snippet, replace `pickle` with a safer alternative like `json` if the data structure allows it. If `pickle` must be used, ensure the data source is trusted.\n\n```python\nimport json\nimport base64\n\n# Assuming the data can be represented as JSON\nangle_mask = json.loads(base64.b16decode(mol.GetProp(\"pb_angle_mask\")).decode('utf-8'))\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following libraries are required:\n\n- `rdkit` (for `mol.GetProp`)\n- `json` (standard library)\n- `base64` (standard library)\n\n### OWASP Resources\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n- [OWASP Top Ten 2021: A08:2021 - Software and Data Integrity Failures](https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            },
+            {
+              "id": "glog-1f8db010-4436-455b-9b50-90c5c1f37a5b",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability described here involves the deserialization of untrusted data using Python's `pickle` module. The `pickle` module is used to serialize and deserialize Python objects, but it is not secure against erroneous or maliciously constructed data. When untrusted data is deserialized using `pickle`, it can lead to arbitrary code execution, which poses a significant security risk.\n\n### General Mitigation Advice\n\n1. **Avoid Using `pickle` for Untrusted Data**: If possible, avoid using `pickle` to deserialize data from untrusted sources. Consider using safer alternatives like `json` for data interchange formats that do not require executing arbitrary code.\n\n2. **Use `pickle` with Caution**: If you must use `pickle`, ensure that the data being deserialized is from a trusted source. Validate and sanitize inputs before deserialization.\n\n3. **Use Safer Alternatives**: Consider using libraries like `json` or `yaml` for serializing and deserializing data, as they are generally safer for handling untrusted data.\n\n4. **Implement Access Controls**: Ensure that only authorized users can provide data to be deserialized.\n\n### Source Code Fix Recommendation\n\nTo mitigate the risk of deserializing untrusted data with `pickle`, you can replace `pickle.loads` with a safer alternative. If you need to deserialize data and `pickle` is not necessary, consider using `json.loads` for JSON data:\n\n```python\nimport json\n\n# Example of using json instead of pickle\n# Assuming chiral_atom_index is a JSON string\nchiral_atom_index = json.loads(\n    '{\"key\": \"value\"}'  # Replace with actual JSON data\n)\n```\n\n### Library Dependencies\n\nFor the above code example to execute properly, the following library is required:\n\n- `json` (This is a standard library in Python and does not require installation)\n\n### OWASP Resources\n\n- [OWASP Deserialization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-502: Deserialization of Untrusted Data](https://cwe.mitre.org/data/definitions/502.html)"
+              },
+              "properties": {
+                "tags": [
+                  "B301"
+                ]
+              }
+            }
+          ],
+          "language": "en-US",
+          "contents": [
+            "localizedData",
+            "nonLocalizedData"
+          ],
+          "isComprehensive": false
+        }
+      },
+      "language": "en-US",
+      "results": [
+        {
+          "ruleId": "glog-5c9515f4-1fef-4c8c-88b7-a80c167f5e95",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "subprocess call with shell=True identified, security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/eval/run_evals.py"
+                },
+                "region": {
+                  "startLine": 81,
+                  "startColumn": 9,
+                  "endLine": 82,
+                  "endColumn": 10,
+                  "snippet": {
+                    "text": "def main(args):\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 87,
+                  "endLine": 100,
+                  "snippet": {
+                    "text": "            ),\n            shell=True,  # noqa: S602\n            check=False,\n            executable=executable,\n            capture_output=True,\n        )\n\n\ndef main(args):\n    # Aggregate the predictions and references\n    files = list(args.data.iterdir())\n    names = {f.stem.lower(): f for f in files}\n\n    # Create the output directory\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "HIGH",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-dbd9c7cb-1c62-4dfa-a2f5-5150a9521282",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "subprocess call with shell=True identified, security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/eval/run_evals.py"
+                },
+                "region": {
+                  "startLine": 63,
+                  "startColumn": 9,
+                  "endLine": 64,
+                  "endColumn": 10,
+                  "snippet": {
+                    "text": "    out_path = Path(outdir) / f\"{name}_ligand.json\"\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 69,
+                  "endLine": 82,
+                  "snippet": {
+                    "text": "            ),\n            shell=True,  # noqa: S602\n            check=False,\n            executable=executable,\n            capture_output=True,\n        )\n\n    # Evaluate ligand metrics\n    out_path = Path(outdir) / f\"{name}_ligand.json\"\n    if out_path.exists():\n        print(f\"Skipping recomputation of {name} as ligand json file already exists\")  # noqa: T201\n    else:\n        subprocess.run(\n            OST_COMPARE_LIGAND.format(\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "HIGH",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-a3d7c2f1-45df-40d5-aeb2-87982f73eec9",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/eval/physcialsim_metrics.py"
+                },
+                "region": {
+                  "startLine": 194,
+                  "startColumn": 11,
+                  "endLine": 194,
+                  "endColumn": 28,
+                  "snippet": {
+                    "text": "    ccd = pickle.load(file)\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 193,
+                  "endLine": 195,
+                  "snippet": {
+                    "text": "with ccd_path.open('rb') as file:\n    ccd = pickle.load(file)\n\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-5c603d2e-00b4-4e27-a590-88f9ee8a3766",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/process/ccd.py"
+                },
+                "region": {
+                  "startLine": 271,
+                  "startColumn": 19,
+                  "endLine": 271,
+                  "endColumn": 33,
+                  "snippet": {
+                    "text": "            mol = pickle.load(f)  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 270,
+                  "endLine": 272,
+                  "snippet": {
+                    "text": "        with path.open(\"rb\") as f:\n            mol = pickle.load(f)  # noqa: S301\n            molecules[item[\"name\"]] = mol\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-a73afce9-7d58-465f-a0bf-b6c86d4b8284",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "subprocess call with shell=True identified, security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/process/cluster.py"
+                },
+                "region": {
+                  "startLine": 48,
+                  "startColumn": 5,
+                  "endLine": 49,
+                  "endColumn": 6,
+                  "snippet": {
+                    "text": "    clustering_path = outdir / \"clust_prot_cluster.tsv\"\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 49,
+                  "endLine": 55,
+                  "snippet": {
+                    "text": "        f\"{args.mmseqs} easy-cluster {outdir / 'proteins.fasta'} {outdir / 'clust_prot'} {outdir / 'tmp'} --min-seq-id 0.4\",  # noqa: E501\n        shell=True,  # noqa: S602\n        check=True,\n    )\n\n    # Load protein clusters\n    clustering_path = outdir / \"clust_prot_cluster.tsv\"\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "HIGH",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-c48efe0d-ca73-47a2-8e54-ea7b3d65b1c7",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/process/cluster.py"
+                },
+                "region": {
+                  "startLine": 73,
+                  "startColumn": 23,
+                  "endLine": 73,
+                  "endColumn": 42,
+                  "snippet": {
+                    "text": "        ligand_data = pickle.load(handle)  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 72,
+                  "endLine": 74,
+                  "snippet": {
+                    "text": "    with Path(args.ccd).open(\"rb\") as handle:\n        ligand_data = pickle.load(handle)  # noqa: S301\n\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-9a000fb7-55d0-4a61-bc82-3002617bad1a",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/process/rcsb.py"
+                },
+                "region": {
+                  "startLine": 48,
+                  "startColumn": 21,
+                  "endLine": 48,
+                  "endColumn": 40,
+                  "snippet": {
+                    "text": "            value = pickle.loads(value)  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 47,
+                  "endLine": 49,
+                  "snippet": {
+                    "text": "        if value is not None:\n            value = pickle.loads(value)  # noqa: S301\n        return value\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-0f186d51-950d-44b1-bfe4-bb5fefb368c9",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/module/inferencev2.py"
+                },
+                "region": {
+                  "startLine": 100,
+                  "startColumn": 30,
+                  "endLine": 100,
+                  "endColumn": 44,
+                  "snippet": {
+                    "text": "                extra_mols = pickle.load(f)  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 99,
+                  "endLine": 101,
+                  "snippet": {
+                    "text": "            with extra_mol_path.open(\"rb\") as f:\n                extra_mols = pickle.load(f)  # noqa: S301\n\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-6279b405-eeae-4005-af2c-32f9636930f4",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/feature/symmetry.py"
+                },
+                "region": {
+                  "startLine": 50,
+                  "startColumn": 22,
+                  "endLine": 50,
+                  "endColumn": 36,
+                  "snippet": {
+                    "text": "        data: dict = pickle.load(f)  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 49,
+                  "endLine": 51,
+                  "snippet": {
+                    "text": "    with Path(path).open(\"rb\") as f:\n        data: dict = pickle.load(f)  # noqa: S301\n\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-e2dd9feb-ff1d-4372-ab90-802fb5eba351",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/feature/symmetry.py"
+                },
+                "region": {
+                  "startLine": 56,
+                  "startColumn": 19,
+                  "endLine": 56,
+                  "endColumn": 47,
+                  "snippet": {
+                    "text": "            sym = pickle.loads(serialized_sym)  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 55,
+                  "endLine": 57,
+                  "snippet": {
+                    "text": "            serialized_sym = bytes.fromhex(mol.GetProp(\"symmetries\"))\n            sym = pickle.loads(serialized_sym)  # noqa: S301\n            atom_names = []\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-b633956a-18e1-4068-bfef-79bc2e4014c8",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/mol.py"
+                },
+                "region": {
+                  "startLine": 101,
+                  "startColumn": 19,
+                  "endLine": 101,
+                  "endColumn": 73,
+                  "snippet": {
+                    "text": "            sym = pickle.loads(bytes.fromhex(mol.GetProp(\"symmetries\")))  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 100,
+                  "endLine": 102,
+                  "snippet": {
+                    "text": "        try:\n            sym = pickle.loads(bytes.fromhex(mol.GetProp(\"symmetries\")))  # noqa: S301\n\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-2ac5bd02-4e69-45ac-8962-0108e43d2b39",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/mol.py"
+                },
+                "region": {
+                  "startLine": 38,
+                  "startColumn": 37,
+                  "endLine": 38,
+                  "endColumn": 51,
+                  "snippet": {
+                    "text": "            loaded_mols[molecule] = pickle.load(f)  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 37,
+                  "endLine": 39,
+                  "snippet": {
+                    "text": "        with path.open(\"rb\") as f:\n            loaded_mols[molecule] = pickle.load(f)  # noqa: S301\n    return loaded_mols\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-80ad9f22-793f-405a-827c-2b737217d168",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/mol.py"
+                },
+                "region": {
+                  "startLine": 110,
+                  "startColumn": 32,
+                  "endLine": 111,
+                  "endColumn": 18,
+                  "snippet": {
+                    "text": "                upper_bounds = pickle.loads(\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 109,
+                  "endLine": 113,
+                  "snippet": {
+                    "text": "                )  # noqa: S301\n                upper_bounds = pickle.loads(\n                    bytes.fromhex(mol.GetProp(\"pb_upper_bounds\"))\n                )  # noqa: S301\n                bond_mask = pickle.loads(bytes.fromhex(mol.GetProp(\"pb_bond_mask\")))  # noqa: S301\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-afb1d5e6-51a1-43d6-bde6-0268926a6404",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/mol.py"
+                },
+                "region": {
+                  "startLine": 80,
+                  "startColumn": 37,
+                  "endLine": 80,
+                  "endColumn": 51,
+                  "snippet": {
+                    "text": "            loaded_mols[mol_name] = pickle.load(f)  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 79,
+                  "endLine": 81,
+                  "snippet": {
+                    "text": "        with path.open(\"rb\") as f:\n            loaded_mols[mol_name] = pickle.load(f)  # noqa: S301\n    return loaded_mols\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-8635dc39-cb62-4be0-b75b-d82abeff4d89",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/mol.py"
+                },
+                "region": {
+                  "startLine": 113,
+                  "startColumn": 29,
+                  "endLine": 113,
+                  "endColumn": 85,
+                  "snippet": {
+                    "text": "                bond_mask = pickle.loads(bytes.fromhex(mol.GetProp(\"pb_bond_mask\")))  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 112,
+                  "endLine": 114,
+                  "snippet": {
+                    "text": "                )  # noqa: S301\n                bond_mask = pickle.loads(bytes.fromhex(mol.GetProp(\"pb_bond_mask\")))  # noqa: S301\n                angle_mask = pickle.loads(bytes.fromhex(mol.GetProp(\"pb_angle_mask\")))  # noqa: S301\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-f8bb48ef-79b9-459a-a81a-83ead94da43c",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/mol.py"
+                },
+                "region": {
+                  "startLine": 114,
+                  "startColumn": 30,
+                  "endLine": 114,
+                  "endColumn": 87,
+                  "snippet": {
+                    "text": "                angle_mask = pickle.loads(bytes.fromhex(mol.GetProp(\"pb_angle_mask\")))  # noqa: S301\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 113,
+                  "endLine": 115,
+                  "snippet": {
+                    "text": "                bond_mask = pickle.loads(bytes.fromhex(mol.GetProp(\"pb_bond_mask\")))  # noqa: S301\n                angle_mask = pickle.loads(bytes.fromhex(mol.GetProp(\"pb_angle_mask\")))  # noqa: S301\n            else:\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        },
+        {
+          "ruleId": "glog-1f8db010-4436-455b-9b50-90c5c1f37a5b",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/boltz/data/mol.py"
+                },
+                "region": {
+                  "startLine": 123,
+                  "startColumn": 37,
+                  "endLine": 124,
+                  "endColumn": 18,
+                  "snippet": {
+                    "text": "                chiral_atom_index = pickle.loads(\n"
+                  }
+                },
+                "contextRegion": {
+                  "startLine": 122,
+                  "endLine": 126,
+                  "snippet": {
+                    "text": "            if mol.HasProp(\"chiral_atom_index\"):\n                chiral_atom_index = pickle.loads(\n                    bytes.fromhex(mol.GetProp(\"chiral_atom_index\"))\n                ).astype(np.int64)\n                chiral_check_mask = pickle.loads(\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "issue_severity": "MEDIUM",
+            "issue_confidence": "HIGH"
+          }
+        }
+      ],
+      "newlineSequences": [
+        "\r\n",
+        "\n"
+      ]
+    }
+  ]
+}
